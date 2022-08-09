@@ -30,29 +30,27 @@ print(schema_list)
 # for value in soup_dict.values():
 #     print(value)
 
-
-
-
-
-
-
-for i in schema_list:
+for i in schema_list[:10]:
     try:
         url = i
         response = requests.get(url)
         soup_dict = eval(response.text)
-
-        print(soup_dict)
-
-        for key in soup_dict.keys():
-            print(key)
-            
-        # key에 @달려있는건 가져오지 않기
-        # 딕셔너리 안에 또 딕셔너리 가져오기
-            
-        for value in soup_dict.values():
-            print(value)
-
+        # print(soup_dict)
+        df_data = pd.DataFrame([soup_dict])
+        df_data.drop(['creator', 'distribution', '@context', '@type'], axis=1, inplace=True)
+        
+        df_data['creator_name'] = soup_dict['creator']['name']
+        df_data['creator_contactPoint'] = soup_dict['creator']['contactPoint']['contactType']
+        df_data['creator_telephone'] = soup_dict['creator']['contactPoint']['telephone']
+        df_data['distribution_encodingFormat'] = soup_dict['distribution'][0]['encodingFormat']
+        df_data['distribution_contentUrl'] = soup_dict['distribution'][0]['contentUrl']
+        
+        row = [df_data['creator_name'], df_data['creator_contactPoint'], df_data['creator_telephone'], df_data['distribution_encodingFormat'], df_data['distribution_contentUrl']]
+        df_data.append(row)
+        
+        
         
     except:
         print('.')
+
+df_data.to_csv('정형데이터_테스트.csv', encoding='utf-8-sig')
